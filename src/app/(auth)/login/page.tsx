@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import FormInput from "@/shared/components/form/FormInput";
+import { toast } from "sonner";
 
 import {
   LoginSchema,
@@ -50,8 +51,10 @@ export default function LoginPage() {
       login(token);
 
       router.push("/dashboard");
+
+      toast.success("Giriş başarılı");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Kullanıcı adı veya şifre hatalı");
+      toast.error(err.response?.data?.message || "Kullanıcı adı veya şifre hatalı");
     }
   };
 

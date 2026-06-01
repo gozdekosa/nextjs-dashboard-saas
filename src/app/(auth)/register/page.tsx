@@ -2,76 +2,104 @@
 
 import { authApi } from "@/features/auth/api/authApi";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { toast } from "sonner";
+import Link from "next/link";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import FormInput from "@/shared/components/form/FormInput";
+
+import {
+  RegisterSchema,
+  type RegisterFormData,
+} from "@/features/auth/schema/RegisterSchema";
 
 export default function RegisterPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-
   const router = useRouter();
 
-  const onSubmit = async () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(RegisterSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (
+    data: RegisterFormData
+  ) => {
     try {
-      setLoading(true);
+      await authApi.register(data);
 
-      await authApi.register({
-        email,
-        password,
-      });
+      toast.success("Kayıt başarılı");
 
-      // kayıt sonrası login sayfasına yönlendir
       router.push("/login");
-
-    } catch (err) {
-      console.log("REGISTER ERROR:", err);
-    } finally {
-      setLoading(false);
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.message ||
+          "Kayıt sırasında bir hata oluştu"
+      );
     }
   };
 
   return (
     <div className="bg-white p-8 rounded-2xl shadow-lg space-y-6">
-
       <div>
-        <h1 className="text-2xl font-bold">Register</h1>
+        <h1 className="text-2xl font-bold">
+          Register
+        </h1>
+
         <p className="text-gray-500 text-sm">
           Create your account 🚀
         </p>
       </div>
 
-      <div className="space-y-4">
-        <input
-          className="w-full border p-3 rounded-lg"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-
-        <input
-          className="w-full border p-3 rounded-lg"
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-
-      <button
-        onClick={onSubmit}
-        disabled={loading}
-        className="w-full bg-black text-white p-3 rounded-lg"
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-4"
       >
-        {loading ? "Creating..." : "Register"}
-      </button>
+        <div className="space-y-4">
+          <FormInput
+            label="Email"
+            placeholder="mail@example.com"
+            {...register("email")}
+            error={errors.email?.message}
+          />
 
-      <p className="text-sm text-center text-gray-500">
-        Already have an account?{" "}
-        <a className="text-blue-600" href="/login">
-          Login
-        </a>
-      </p>
+          <FormInput
+            label="Password"
+            type="password"
+            placeholder="Password"
+            {...register("password")}
+            error={errors.password?.message}
+          />
+        </div>
 
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-black text-white p-3 rounded-lg"
+        >
+          {isSubmitting
+            ? "Creating..."
+            : "Register"}
+        </button>
+
+        <p className="text-sm text-center text-gray-500">
+          Already have an account?{" "}
+          <Link
+            className="text-blue-600"
+            href="/login"
+          >
+            Login
+          </Link>
+        </p>
+      </form>
     </div>
   );
 }
