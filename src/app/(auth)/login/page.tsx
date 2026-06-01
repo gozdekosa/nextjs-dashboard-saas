@@ -7,10 +7,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import FormInput from "@/shared/components/form/FormInput";
+
 import {
   LoginSchema,
   type LoginFormData,
 } from "@/features/auth/schema/LoginSchema";
+
 import Link from "next/link";
 
 
@@ -74,35 +77,30 @@ export default function LoginPage() {
       >
 
       <div className="space-y-4">
-        <input
-          className="w-full border p-3 rounded-lg"
-          placeholder="Email"
+        <FormInput
+          label="Email"
+          placeholder="mail@example.com"
           {...register("email")}
+          error={errors.email?.message}
         />
-        {errors.email && (
-        <p className="text-sm text-red-500">
-          {errors.email?.message}
-        </p>
-        )}
         
-        <input
-          className="w-full border p-3 rounded-lg"
-          type="password"
+        <FormInput
+          label="Password"
           placeholder="Password"
           {...register("password")}
+          error={errors.password?.message}
+          type="password"
         />
-        {errors.password && (
-          <p className="text-sm text-red-500">
-            {errors.password?.message}
-          </p>
-        )}
       </div>
 
       <button
         type="submit"
-        className="w-full bg-black text-white p-3 rounded-lg cursor-pointer"
+        disabled={isSubmitting}
+        className="w-full bg-black text-white p-3 rounded-lg"
       >
-        Login
+        {isSubmitting
+          ? "Logging in..."
+          : "Login"}
       </button>
 
       <p className="text-sm text-center text-gray-500">
